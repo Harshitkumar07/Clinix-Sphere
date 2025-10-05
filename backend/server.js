@@ -29,6 +29,23 @@ app.use(morgan('dev'));
 // Serve static files (profile photos)
 app.use('/uploads', express.static('uploads'));
 
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to Clinix Sphere API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      doctors: '/api/doctors',
+      appointments: '/api/appointments',
+      prescriptions: '/api/prescriptions',
+      users: '/api/users'
+    }
+  });
+});
+
 // Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({
