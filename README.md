@@ -30,6 +30,8 @@ Clinix-Sphere/
 - **Database:** MongoDB with Mongoose ODM
 - **Authentication:** JWT + bcrypt
 - **Validation:** express-validator
+- **File Storage:** Vercel Blob Storage (for profile photos)
+- **File Upload:** Multer
 - **Testing:** Jest + Supertest
 
 ### Doctor Dashboard (Web)
@@ -48,11 +50,13 @@ Clinix-Sphere/
 
 ## 🚀 Features
 
-### 👤 Authentication
+### 👤 Authentication & User Profile
 - ✅ JWT-based authentication
 - ✅ Role-based access control (Doctor/Patient)
 - ✅ Secure password hashing with bcrypt
 - ✅ Protected routes and middleware
+- ✅ Profile photo upload with Vercel Blob Storage
+- ✅ Update user profile information
 
 ### 📅 Appointment Management
 **For Patients:**
@@ -82,6 +86,10 @@ Clinix-Sphere/
 |--------|----------|-------------|---------------|
 | POST | `/api/auth/register` | Register new user | No |
 | POST | `/api/auth/login` | Login and get JWT token | No |
+| GET | `/api/users/profile` | Get current user profile | Yes |
+| PATCH | `/api/users/profile` | Update user profile | Yes |
+| POST | `/api/users/profile/photo` | Upload profile photo | Yes |
+| DELETE | `/api/users/profile/photo` | Delete profile photo | Yes |
 | GET | `/api/doctors` | Get all doctors | Yes |
 | POST | `/api/appointments` | Create new appointment | Yes (Patient) |
 | GET | `/api/appointments` | Get user's appointments | Yes |
@@ -180,6 +188,12 @@ npm test
   role: Enum ['doctor', 'patient'],
   specialty: String (doctors only),
   phone: String,
+  profilePhoto: String (Vercel Blob URL),
+  bio: String,
+  experience: Number,
+  location: String,
+  education: String,
+  licenseNumber: String,
   createdAt: Date
 }
 ```
@@ -218,21 +232,23 @@ npm test
 ## 🔐 Environment Variables
 
 ### Backend
-```
+```env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_secret_key_here
 JWT_EXPIRES_IN=7d
 NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token_here
 ```
 
 ### Doctor Dashboard
-```
-REACT_APP_API_URL=http://localhost:5000/api
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
 ### Patient App
-```
+```env
 EXPO_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
@@ -265,38 +281,219 @@ EXPO_PUBLIC_API_URL=http://localhost:5000/api
 ### Live Application
 
 - **GitHub Repository:** [https://github.com/Harshitkumar07/Clinix-Sphere](https://github.com/Harshitkumar07/Clinix-Sphere)
-- **Backend API:** `https://your-backend.vercel.app` *(Update after deployment)*
-- **Doctor Dashboard:** `https://your-dashboard.vercel.app` *(Update after deployment)*
-- **Patient Mobile App:** Available via Expo Go *(Update QR code after deployment)*
+- **Backend API:** `https://clinix-sphere-amber.vercel.app`
+- **Doctor Dashboard:** *(Update after deployment)*
+- **Patient Mobile App:** Available via Expo Go
 
-### Deployment Guides
+---
 
-For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md):
-- ✅ **GitHub:** Push your code to GitHub repository
-- ✅ **Vercel:** Deploy backend API and doctor dashboard
-- ✅ **Expo:** Publish React Native patient app
-- ✅ **MongoDB Atlas:** Cloud database setup
+## 🚀 Detailed Deployment Guide
 
-### Quick Deploy Commands
+### Prerequisites
+- [Vercel Account](https://vercel.com)
+- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) (Free tier available)
+- GitHub repository
+- Vercel CLI (optional): `npm install -g vercel`
 
+---
+
+### 📦 Step 1: Prepare Backend for Deployment
+
+#### 1.1 Install Dependencies
 ```bash
-# 1. Push to GitHub
-git add .
-git commit -m "Deploy Clinix Sphere"
-git push origin main
+cd backend
+npm install
+```
 
-# 2. Deploy Backend (via Vercel CLI)
+#### 1.2 Configure Vercel Blob Storage
+
+The app uses **Vercel Blob Storage** for profile photo uploads (serverless-compatible).
+
+**Get your Blob token:**
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Select or create your project
+3. Navigate to **Storage** tab
+4. Click **Create Database** → Select **Blob**
+5. Name it (e.g., "clinix-uploads")
+6. Copy the **BLOB_READ_WRITE_TOKEN**
+
+#### 1.3 Set Environment Variables in Vercel
+
+Go to your Vercel project → **Settings** → **Environment Variables**
+
+Add the following variables:
+
+| Variable | Value | Environments |
+|----------|-------|-------------|
+| `MONGODB_URI` | Your MongoDB Atlas connection string | All |
+| `JWT_SECRET` | Your secure JWT secret key | All |
+| `JWT_EXPIRES_IN` | `7d` | All |
+| `NODE_ENV` | `production` | Production |
+| `CORS_ORIGIN` | Your frontend URLs (comma-separated) | All |
+| `BLOB_READ_WRITE_TOKEN` | Token from Vercel Blob | All |
+
+**Example CORS_ORIGIN:**
+```
+https://your-dashboard.vercel.app,https://clinix-sphere-amber.vercel.app
+```
+
+#### 1.4 Deploy Backend to Vercel
+
+**Option A - GitHub Integration (Recommended):**
+1. Push code to GitHub
+2. Import repository in Vercel
+3. Vercel auto-detects settings from `vercel.json`
+4. Deploy!
+
+**Option B - Vercel CLI:**
+```bash
 cd backend
 vercel --prod
+```
 
-# 3. Deploy Doctor Dashboard (via Vercel CLI)
+---
+
+### 🖥️ Step 2: Deploy Doctor Dashboard
+
+#### 2.1 Update Environment Variables
+
+Edit `doctor-dashboard/.env`:
+```env
+VITE_API_URL=https://clinix-sphere-amber.vercel.app/api
+```
+
+#### 2.2 Deploy to Vercel
+
+**Option A - GitHub:**
+1. Push to GitHub
+2. Import in Vercel
+3. Add environment variable `VITE_API_URL` in Vercel settings
+4. Deploy
+
+**Option B - CLI:**
+```bash
 cd doctor-dashboard
 vercel --prod
-
-# 4. Publish Patient App (via Expo)
-cd patient-app
-expo publish
 ```
+
+---
+
+### 📱 Step 3: Deploy Patient Mobile App (Expo)
+
+#### 3.1 Update API URL
+
+Edit `patient-app/.env`:
+```env
+EXPO_PUBLIC_API_URL=https://clinix-sphere-amber.vercel.app/api
+```
+
+#### 3.2 Publish to Expo
+
+```bash
+cd patient-app
+npx expo publish
+```
+
+Or build standalone apps:
+```bash
+# Android APK
+npx expo build:android
+
+# iOS IPA
+npx expo build:ios
+```
+
+---
+
+### 🔧 Step 4: Post-Deployment Configuration
+
+#### 4.1 Update CORS Settings
+
+In Vercel, update `CORS_ORIGIN` environment variable with your deployed frontend URLs.
+
+#### 4.2 Test Endpoints
+
+Test your API:
+```bash
+curl https://clinix-sphere-amber.vercel.app/api/auth/login
+```
+
+#### 4.3 Seed Database (Optional)
+
+```bash
+# Run locally with production DB
+cd backend
+MONGODB_URI=your_atlas_uri npm run seed
+```
+
+---
+
+### 🎯 Deployment Checklist
+
+- [ ] MongoDB Atlas cluster created and whitelisted (IP: 0.0.0.0/0 for Vercel)
+- [ ] Vercel Blob Storage created and token obtained
+- [ ] All environment variables set in Vercel
+- [ ] Backend deployed and accessible
+- [ ] Doctor dashboard deployed with correct API URL
+- [ ] Patient app published to Expo
+- [ ] CORS configured for all frontend URLs
+- [ ] Test user registration and login
+- [ ] Test profile photo upload
+- [ ] Test appointment creation
+- [ ] Test prescription creation
+
+---
+
+### 🐛 Troubleshooting
+
+#### Error: `ENOENT: no such file or directory, mkdir '/var/task/backend/uploads'`
+**Solution:** This is fixed! The app now uses Vercel Blob Storage. Ensure `BLOB_READ_WRITE_TOKEN` is set in Vercel environment variables.
+
+#### Error: `MongoNetworkError`
+**Solution:** Whitelist Vercel IPs in MongoDB Atlas:
+1. Go to MongoDB Atlas → Network Access
+2. Add IP: `0.0.0.0/0` (Allow from anywhere)
+
+#### Error: `CORS policy`
+**Solution:** Add your frontend URL to `CORS_ORIGIN` environment variable in Vercel.
+
+#### Vercel Blob Upload Fails
+**Solution:**
+1. Check if `BLOB_READ_WRITE_TOKEN` is set correctly
+2. Verify token hasn't expired
+3. Check Vercel Blob dashboard for storage quota
+
+---
+
+### 📊 Vercel Blob Storage - Free Tier
+
+- **Storage:** 1 GB
+- **Bandwidth:** 100 GB/month
+- **Perfect for:** Profile photos, documents, images
+
+---
+
+### 🔄 Redeployment
+
+For updates, simply push to GitHub:
+```bash
+git add .
+git commit -m "Update feature"
+git push origin main
+```
+
+Vercel automatically redeploys on push.
+
+---
+
+### 📖 Additional Resources
+
+- [Vercel Documentation](https://vercel.com/docs)
+- [Vercel Blob Storage Docs](https://vercel.com/docs/storage/vercel-blob)
+- [MongoDB Atlas Setup](https://www.mongodb.com/docs/atlas/getting-started/)
+- [Expo Publishing Guide](https://docs.expo.dev/archive/classic-updates/publishing/)
+
+For detailed step-by-step instructions, see **[VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
 
 ## 📱 Screenshots & Demo
 

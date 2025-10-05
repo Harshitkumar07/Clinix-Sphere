@@ -1,6 +1,6 @@
 const User = require('../models/User.model');
 const path = require('path');
-const fs = require('fs');
+const { put, del } = require('@vercel/blob');
 
 /**
  * @route   GET /api/users/profile
@@ -97,16 +97,25 @@ const uploadProfilePhoto = async (req, res) => {
       });
     }
 
-    // Delete old photo if exists
+    // Delete old photo from Vercel Blob if exists
     if (user.profilePhoto) {
-      const oldPhotoPath = path.join(__dirname, '..', user.profilePhoto);
-      if (fs.existsSync(oldPhotoPath)) {
-        fs.unlinkSync(oldPhotoPath);
+      try {
+        await del(user.profilePhoto);
+      } catch (error) {
+        console.error('Error deleting old photo:', error);
+        // Continue even if delete fails
       }
     }
 
-    // Update user with new photo path
-    user.profilePhoto = `/uploads/profiles/${req.file.filename}`;
+    // Upload to Vercel Blob
+    const filename = `profiles/${req.user._id}-${Date.now()}${path.extname(req.file.originalname)}`;
+    const blob = await put(filename, req.file.buffer, {
+      access: 'public',
+      contentType: req.file.mimetype
+    });
+
+    // Update user with new photo URL
+    user.profilePhoto = blob.url;
     await user.save();
 
     // Return user without password
@@ -147,11 +156,13 @@ const deleteProfilePhoto = async (req, res) => {
       });
     }
 
-    // Delete photo file if exists
+    // Delete photo from Vercel Blob if exists
     if (user.profilePhoto) {
-      const photoPath = path.join(__dirname, '..', user.profilePhoto);
-      if (fs.existsSync(photoPath)) {
-        fs.unlinkSync(photoPath);
+      try {
+        await del(user.profilePhoto);
+      } catch (error) {
+        console.error('Error deleting photo from blob:', error);
+        // Continue even if delete fails
       }
     }
 
