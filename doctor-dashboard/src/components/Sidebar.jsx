@@ -56,12 +56,12 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <img 
-            src="/src/assets/clinix-logo.png" 
+            src="/clinix-logo.png" 
             alt="Clinix Sphere Logo" 
             className="h-10 w-auto"
           />

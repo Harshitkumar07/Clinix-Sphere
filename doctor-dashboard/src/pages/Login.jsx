@@ -58,7 +58,7 @@ const Login = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3 mb-16">
             <img 
-              src="/src/assets/clinix-logo.png" 
+              src="/clinix-logo.png" 
               alt="Clinix Sphere Logo" 
               className="h-16 w-auto"
             />
@@ -124,7 +124,7 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="md:hidden flex items-center justify-center mb-6 sm:mb-8">
             <img 
-              src="/src/assets/clinix-logo.png" 
+              src="/clinix-logo.png" 
               alt="Clinix Sphere Logo" 
               className="h-12 w-auto mr-3"
             />
